@@ -81,7 +81,7 @@ print("\n***** PROBLEM 1 *****\n")
 
 ## The Media class should also have the following methods:
 ## - a special string method, that returns a string of the form 'TITLE by AUTHOR'
-## - a special representation method, which returns " <itunes id>" with the iTunes id number for the piece of media (e.g. the track) only in place of "<itunes id>"
+## - a special representation method, which returns "ITUNES MEDIA: <itunes id>" with the iTunes id number for the piece of media (e.g. the track) only in place of "<itunes id>"
 ## - a special len method, which, for the Media class, returns 0 no matter what. (The length of an audiobook might mean something different from the length of a song, depending on how you want to define them!)
 ## - a special contains method (for the in operator) which takes one additional input, as all contains methods must, which should always be a string, and checks to see if the string input to this contains method is INSIDE the string representing the title of this piece of media (the title instance variable)
 
@@ -89,11 +89,11 @@ print("\n***** PROBLEM 1 *****\n")
 class Media(object):
     def __init__(self, media_dict):
 
-        self.title = title
+        self.title = media_dict["trackName"]
         self.author = media_dict["artistName"]
         self.itunes_URL = media_dict["trackViewUrl"]
         self.itunes_id = media_dict["trackId"]
-
+        self.dictionary = media_dict
     def __str__(self):
         return "{} by {}".format(
             self.title,
@@ -101,12 +101,19 @@ class Media(object):
             )
 
     def __repr__(self):
-        return "{}".format(
+        return "ITUNES MEDIA: {}".format(
             self.itunes_id
             )
 
     def __len__(self):
         return 0
+
+    def __contains__(self, check):
+        if check in self.title:
+            return True
+        else:
+            return False
+
 
 
 ## [PROBLEM 2] [400 POINTS]
@@ -132,14 +139,25 @@ print("\n***** PROBLEM 2 *****\n")
 
 class Song(Media):
     def __init__(self, song_dictionary):
-        self.album = song_dictionary["collectionName"]
-        self.track_number = song_dictionary["trackNumber"]
-        self.genre = song_dictionary["primaryGenreName"]
-        
-    def num_media_length(self):
-        song_length = song_dictionary["trackTimeMillis"] * 1000
-        return song_length
+        super().__init__(song_dictionary)
+        if "collectionName" in song_dictionary:
+            self.album = song_dictionary["collectionName"]
+        else:
+            self.album = ""
+        if "trackNumber" in song_dictionary:
+            self.track_number = song_dictionary["trackNumber"]
+        else:
+            self.track_number = 0
 
+        self.genre = song_dictionary["primaryGenreName"]
+        if "trackName" in song_dictionary:
+            self.title = song_dictionary["trackName"]
+        else:
+            self.title = ""
+
+    def __len__(self):
+        song_length = int ((self.dictionary["trackTimeMillis"] / 1000) )
+        return song_length
 
 ### class Movie:
 
@@ -154,13 +172,15 @@ class Song(Media):
 ## Should have an additional method called title_words_num that returns an integer representing the number of words in the movie description. If there is no movie description, this method should return 0.
 
 class Movie(Media):
-    def __init__(self, song_dictionary):
-        self.rating = song_dictionary["trackExplicitness"]
-        self.genre = song_dictionary[""]
-        if song_dictionary ["longDescription"] != ''
-            self.description = song_dictionary["longDescription"]
-        else
-            self.description = 'None'
+    def __init__(self, movie_dictionary):
+        super().__init__(movie_dictionary)
+        self.rating = movie_dictionary["contentAdvisoryRating"]
+        self.genre = movie_dictionary["primaryGenreName"]
+        self.description = movie_dictionary.get("longDescription")
+        
+    def __len__(self):
+        movie_length = int ((self.dictionary["trackTimeMillis"] / 1000) / 60 )
+        return movie_length
 
 ## [PROBLEM 3] [150 POINTS]
 print("\n***** PROBLEM 3 *****\n")
@@ -171,14 +191,15 @@ print("\n***** PROBLEM 3 *****\n")
 
 ## NOTE: (The first time you run this file, data will be cached, so the data saved in each variable will be the same each time you run the file, as long as you do not delete your cached data.)
 
-media_samples = sample_get_cache_itunes_data("love")["results"]
+media_samples = sample_get_cache_itunes_data("platoon")["results"]
 
-song_samples = sample_get_cache_itunes_data("love","music")["results"]
+song_samples = sample_get_cache_itunes_data("pretender","music")["results"]
 
-movie_samples = sample_get_cache_itunes_data("love","movie")["results"]
+movie_samples = sample_get_cache_itunes_data("extra","movie")["results"]
 
-print(json.dumps(media_samples[0], indent=4, sort_keys=True))
-print(json.dumps(movie_samples[0], indent=4, sort_keys=True))
+#print(json.dumps(media_samples[0], indent=4, sort_keys=True))
+#print(json.dumps(movie_samples[0], indent=4, sort_keys=True))
+#print(json.dumps(song_samples[0], indent=4, sort_keys=True))
 
 ## You may want to do some investigation on these variables to make sure you understand correctly what type of value they hold, what's in each one!
 
@@ -190,7 +211,20 @@ print(json.dumps(movie_samples[0], indent=4, sort_keys=True))
 
 ## You may use any method of accumulation to make that happen.
 
+media_list = []
+for media_dict in media_samples:
+    media_obj = Media(media_dict)
+    media_list.append(media_obj)
 
+song_list = []
+for song_dict in song_samples:
+    song_obj = Song(song_dict)
+    song_list.append(song_obj)
+
+movie_list = []
+for movie_dict in movie_samples:
+    movie_obj = Movie(movie_dict)
+    movie_list.append(movie_obj)
 
 
 ## [PROBLEM 4] [200 POINTS]
@@ -222,7 +256,24 @@ print("\n***** PROBLEM 4 *****\n")
 
 ## HINT #4: Write or draw out your plan for this before you actually start writing the code! That will make it much easier.
 
+outfile = open("movies.csv", "w")
+outfile.write('"Title", "Artist", "ID", "URL", "Length"\n')
+for movie_obj in movie_list:
+    outfile.write('"{}, {}, {}, {}, {}"\n'.format(movie_obj.title, movie_obj.author, movie_obj.itunes_id, movie_obj.itunes_URL, len(movie_obj)))
+outfile.close()
 
+
+
+outfile = open("songs.csv", "w")
+outfile.write('"Title", "Artist", "ID", "URL", "Length"\n')
+
+outfile.close()
+
+
+outfile = open("media.csv", "w")
+outfile.write('"Title", "Artist", "ID", "URL", "Length"\n')
+
+outfile.close()
 
 
 
