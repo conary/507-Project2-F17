@@ -257,7 +257,7 @@ print("\n***** PROBLEM 4 *****\n")
 ## HINT #4: Write or draw out your plan for this before you actually start writing the code! That will make it much easier.
 
 outfile = open("movies.csv", "w")
-outfile.write('"Title", "Artist", "ID", "URL", "Length"\n')
+outfile.write('"Title, Artist, ID, URL, Length"\n')
 for movie_obj in movie_list:
     outfile.write('"{}, {}, {}, {}, {}"\n'.format(movie_obj.title, movie_obj.author, movie_obj.itunes_id, movie_obj.itunes_URL, len(movie_obj)))
 outfile.close()
@@ -265,14 +265,16 @@ outfile.close()
 
 
 outfile = open("songs.csv", "w")
-outfile.write('"Title", "Artist", "ID", "URL", "Length"\n')
-
+outfile.write('"Title, Artist, ID, URL, Length"\n')
+for song_obj in song_list:
+    outfile.write('"{}, {}, {}, {}, {}"\n'.format(song_obj.title, song_obj.author, song_obj.itunes_id, song_obj.itunes_URL, len(song_obj)))
 outfile.close()
 
 
 outfile = open("media.csv", "w")
-outfile.write('"Title", "Artist", "ID", "URL", "Length"\n')
-
+outfile.write('"Title, Artist, ID, URL, Length"\n')
+for media_obj in media_list:
+    outfile.write('"{}, {}, {}, {}, {}"\n'.format(media_obj.title, media_obj.author, media_obj.itunes_id, media_obj.itunes_URL, len(media_obj)))
 outfile.close()
 
 
