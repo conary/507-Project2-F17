@@ -182,6 +182,12 @@ class Movie(Media):
         movie_length = int ((self.dictionary["trackTimeMillis"] / 1000) / 60 )
         return movie_length
 
+    def title_words_num(self):
+        if len(self.description):
+            return self.description
+        else:
+            return None
+
 ## [PROBLEM 3] [150 POINTS]
 print("\n***** PROBLEM 3 *****\n")
 
